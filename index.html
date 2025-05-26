@@ -425,6 +425,8 @@
     </main>
 
     <script>
+        // Wait for DOM to be ready before initializing the app
+        document.addEventListener('DOMContentLoaded', () => {
         // Mock database for demo purposes
         class MockDB {
             constructor() {
@@ -1012,10 +1014,11 @@
       </div>
     </form>
     `;
-  }
-}
+        }
+    }
 
-window.app = new HalfDoneProjectsApp();
-</script>
+    window.app = new HalfDoneProjectsApp();
+});
+    </script>
 </body>
 </html>
