@@ -1,0 +1,27 @@
+name = "half-done-projects"
+compatibility_date = "2024-05-01"
+
+[env.production.vars]
+NODE_VERSION = "20"
+
+# Add these to your Cloudflare Pages environment variables
+# OPENAI_API_KEY = "your-openai-api-key"
+# GOOGLE_CLIENT_ID = "your-google-oauth-client-id" 
+# GOOGLE_CLIENT_SECRET = "your-google-oauth-client-secret"
+# AUTH_SECRET = "your-auth-secret-key"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "half_done_projects"
+database_id = "your-d1-database-id"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "half_done_projects_preview" 
+database_id = "your-preview-d1-database-id"
+
+# For local development
+[[d1_databases]]
+binding = "DB"
+database_name = "half_done_projects_local"
+database_id = "local"

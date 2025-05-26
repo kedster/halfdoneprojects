@@ -1,0 +1,108 @@
+import { json, error } from '@sveltejs/kit';
+import OpenAI from 'openai';
+import type { RequestHandler } from './$types';
+import type { AIAnalysis } from '../../../app.d.ts';
+
+export const POST: RequestHandler = async ({ request, platform, locals }) => {
+	if (!locals.user) {
+		throw error(401, 'Unauthorized');
+	}
+
+	try {
+		const { transcript } = await request.json();
+		
+		if (!transcript?.trim()) {
+			throw error(400, 'Transcript is required');
+		}
+
+		const openai = new OpenAI({
+			apiKey: platform?.env?.OPENAI_API_KEY
+		});
+
+		const prompt = `
+Analyze this voice note about a project and extract structured information. 
+Return ONLY valid JSON with these exact fields:
+
+{
+  "project_name": "Short descriptive name for the project",
+  "due_date": "YYYY-MM-DD format if mentioned, otherwise null",
+  "goal": "Main objective or purpose", 
+  "tasks": ["array", "of", "specific", "actionable", "tasks"],
+  "reminder_frequency": "daily" | "weekly" | "monthly",
+  "notify_target": {
+    "type": "self" | "email" | "relationship",
+    "value": "email address or relationship name",
+    "relationship": "self | mom | dad | friend | partner | etc"
+  },
+  "tone": "encouraging" | "gentle" | "firm" | "humorous",
+  "suggestion": "One helpful tip for completing this project"
+}
+
+Voice note: "${transcript}"
+
+Rules:
+- Extract realistic, specific tasks (3-6 items)
+- If no due date mentioned, leave as null
+- Default reminder_frequency is "weekly"
+- Default tone is "encouraging"
+- Default notify_target is {"type": "self", "value": "me", "relationship": "self"}
+- Make project_name concise but descriptive
+- Ensure all tasks are actionable and specific
+`;
+
+		const response = await openai.chat.completions.create({
+			model: 'gpt-4',
+			messages: [
+				{
+					role: 'system',
+					content: 'You are an expert project manager. Extract structured project data from voice notes. Respond with valid JSON only.'
+				},
+				{
+					role: 'user',
+					content: prompt
+				}
+			],
+			temperature: 0.3,
+			max_tokens: 800
+		});
+
+		const content = response.choices[0]?.message?.content;
+		if (!content) {
+			throw error(500, 'No response from AI');
+		}
+
+		// Parse and validate the JSON response
+		let analysis: AIAnalysis;
+		try {
+			analysis = JSON.parse(content);
+		} catch (parseError) {
+			console.error('Failed to parse AI response:', content);
+			throw error(500, 'Invalid AI response format');
+		}
+
+		// Validate required fields
+		if (!analysis.project_name || !analysis.goal || !Array.isArray(analysis.tasks)) {
+			throw error(500, 'Incomplete AI analysis');
+		}
+
+		// Set defaults for missing optional fields
+		analysis.reminder_frequency = analysis.reminder_frequency || 'weekly';
+		analysis.tone = analysis.tone || 'encouraging';
+		analysis.notify_target = analysis.notify_target || {
+			type: 'self',
+			value: 'me', 
+			relationship: 'self'
+		};
+
+		return json(analysis);
+
+	} catch (err) {
+		console.error('AI Analysis Error:', err);
+		
+		if (err instanceof Error && err.message.includes('401')) {
+			throw error(401, 'Invalid OpenAI API key');
+		}
+		
+		throw error(500, 'Failed to analyze voice note');
+	}
+};

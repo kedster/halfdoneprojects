@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Half-Done Projects</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #7c3aed 50%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #60a5fa, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-tab.active {
+            background: #6366f1;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 40px 0;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* Create Project Section */
+        .create-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .create-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .create-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 32px;
+        }
+
+        /* Voice Recording */
+        .voice-section {
+            margin-bottom: 24px;
+        }
+
+        .record-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+        }
+
+        .record-button.recording {
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        .record-button:not(.recording) {
+            background: #6366f1;
+        }
+
+        .record-button:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .projects-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .project-item {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .project-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .project-item.selected {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .project-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .project-meta {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Project Details */
+        .project-details {
+            padding: 24px;
+        }
+
+        .project-header {
+            margin-bottom: 24px;
+        }
+
+        .project-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .project-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-item {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-weight: 500;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            margin-bottom: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #06d6a0);
+            transition: width 0.5s ease;
+        }
+
+        /* Tasks */
+        .tasks-section {
+            margin-bottom: 24px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-top: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .task-checkbox.completed {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        .task-text {
+            flex: 1;
+            transition: all 0.2s ease;
+        }
+
+        .task-text.completed {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .settings-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .project-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">Half-Done Projects</h1>
+                <div class="user-info">👋 Demo User</div>
+            </div>
+            <nav class="nav-tabs">
+                <button class="nav-tab active" onclick="app.setActiveTab('create')">Create Project</button>
+                <button class="nav-tab" onclick="app.setActiveTab('manage')">Manage Projects</button>
+            </nav>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <div class="container">
+            <div id="app-content"></div>
+        </div>
+    </main>
+
+    <script>
+        // Mock database for demo purposes
+        class MockDB {
+            constructor() {
+                this.projects = [];
+                this.tasks = [];
+            }
+
+            addProject(project) {
+                project.id = 'proj_' + Date.now();
+                project.created_at = new Date().toISOString();
+                this.projects.push(project);
+                return project;
+            }
+
+            getProjects(userId) {
+                return this.projects.filter(p => p.user_id === userId);
+            }
+
+            updateProject(projectId, updates) {
+                const project = this.projects.find(p => p.id === projectId);
+                if (project) {
+                    Object.assign(project, updates);
+                }
+                return project;
+            }
+
+            deleteProject(projectId) {
+                this.projects = this.projects.filter(p => p.id !== projectId);
+                this.tasks = this.tasks.filter(t => t.project_id !== projectId);
+            }
+
+            addTasks(projectId, tasks) {
+                const newTasks = tasks.map(task => ({
+                    id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    project_id: projectId,
+                    description: task,
+                    status: 'pending'
+                }));
+                this.tasks.push(...newTasks);
+                return newTasks;
+            }
+
+            getTasksForProject(projectId) {
+                return this.tasks.filter(t => t.project_id === projectId);
+            }
+
+            updateTaskStatus(taskId, status) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.status = status;
+                }
+            }
+        }
+
+        // Mock AI Analysis
+        async function mockAnalyzeVoiceNote(transcript) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            return {
+                project_name: extractProjectName(transcript),
+                due_date: extractDueDate(transcript),
+                goal: extractGoal(transcript),
+                tasks: extractTasks(transcript),
+                reminder_frequency: extractReminderFreq(transcript),
+                notify_target: extractNotifyTarget(transcript),
+                tone: extractTone(transcript),
+                suggestion: generateSuggestion(transcript)
+            };
+        }
+
+        function extractProjectName(text) {
+            const projectKeywords = ['project', 'build', 'create', 'make', 'develop', 'work on'];
+            for (const keyword of projectKeywords) {
+                const regex = new RegExp(`${keyword}\\s+(\\w+(?:\\s+\\w+){0,3})`, 'i');
+                const match = text.match(regex);
+                if (match) return match[1];
+            }
+            return text.split(' ').slice(0, 4).join(' ') || 'New Project';
+        }
+
+        function extractDueDate(text) {
+            const datePatterns = [
+                /in (\d+) days?/i,
+                /by (next week|this week|tomorrow)/i,
+                /due (.+?)(?:\.|$)/i
+            ];
+            
+            for (const pattern of datePatterns) {
+                const match = text.match(pattern);
+                if (match) {
+                    if (match[1].includes('day')) {
+                        const days = parseInt(match[1]);
+                        const date = new Date();
+                        date.setDate(date.getDate() + days);
+                        return date.toISOString().split('T')[0];
+                    }
+                    if (match[1] === 'next week') {
+                        const date = new Date();
+                        date.setDate(date.getDate() + 7);
+                        return date.toISOString().split('T')[0];
+                    }
+                    if (match[1] === 'tomorrow') {
+                        const date = new Date();
+                        date.setDate(date.getDate() + 1);
+                        return date.toISOString().split('T')[0];
+                    }
+                }
+            }
+            
+            const date = new Date();
+            date.setDate(date.getDate() + 7);
+            return date.toISOString().split('T')[0];
+        }
+
+        function extractGoal(text) {
+            if (text.includes('goal is') || text.includes('want to')) {
+                const goalMatch = text.match(/(?:goal is|want to)\s+(.+?)(?:\.|$)/i);
+                if (goalMatch) return goalMatch[1];
+            }
+            return 'Complete the project successfully';
+        }
+
+        function extractTasks(text) {
+            const taskKeywords = ['need to', 'have to', 'should', 'must', 'first', 'then', 'next', 'also'];
+            const sentences = text.split(/[.!?]+/);
+            const tasks = [];
+            
+            for (const sentence of sentences) {
+                for (const keyword of taskKeywords) {
+                    if (sentence.toLowerCase().includes(keyword)) {
+                        const cleaned = sentence.trim().replace(/^(and|then|next|also)\s*/i, '');
+                        if (cleaned.length > 10) {
+                            tasks.push(cleaned);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (tasks.length === 0) {
+                tasks.push('Plan project structure', 'Start implementation', 'Review and test', 'Finalize project');
+            }
+            
+            return tasks.slice(0, 5);
+        }
+
+        function extractReminderFreq(text) {
+            if (text.includes('daily')) return 'daily';
+            if (text.includes('weekly')) return 'weekly';
+            return 'weekly';
+        }
+
+        function extractNotifyTarget(text) {
+            const emailPattern = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+            const emailMatch = text.match(emailPattern);
+            
+            if (emailMatch) {
+                return { type: 'email', value: emailMatch[1], relationship: 'contact' };
+            }
+            
+            const relationships = ['mom', 'dad', 'friend', 'partner', 'boss', 'teammate'];
+            for (const rel of relationships) {
+                if (text.toLowerCase().includes(rel)) {
+                    return { type: 'relationship', value: rel, relationship: rel };
+                }
+            }
+            
+            return { type: 'self', value: 'me', relationship: 'self' };
+        }
+
+        function extractTone(text) {
+            if (text.includes('gentle') || text.includes('nice')) return 'gentle';
+            if (text.includes('strict') || text.includes('firm')) return 'firm';
+            if (text.includes('funny') || text.includes('humor')) return 'humorous';
+            return 'encouraging';
+        }
+
+        function generateSuggestion(text) {
+            const suggestions = [
+                'Break down large tasks into smaller, manageable steps',
+                'Set up a dedicated workspace for this project',
+                'Schedule specific time blocks for focused work',
+                'Consider using the Pomodoro technique for better focus',
+                'Keep a project journal to track progress and ideas'
+            ];
+            return suggestions[Math.floor(Math.random() * suggestions.length)];
+        }
+
+        // Main App Class
+        class HalfDoneProjectsApp {
+            constructor() {
+                this.db = new MockDB();
+                this.currentUser = { id: 'demo_user', name: 'Demo User', email: 'demo@example.com' };
+                this.isRecording = false;
+                this.transcript = '';
+                this.isAnalyzing = false;
+                this.projects = [];
+                this.selectedProject = null;
+                this.activeTab = 'create';
+                this.editingProject = null;
+                
+                this.loadProjects();
+                this.render();
+            }
+
+            loadProjects() {
+                this.projects = this.db.getProjects(this.currentUser.id);
+            }
+
+            setActiveTab(tab) {
+                this.activeTab = tab;
+                this.selectedProject = null;
+                this.editingProject = null;
+                
+                // Update tab buttons
+                document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                
+                this.render();
+            }
+
+            async startRecording() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert('Voice recording is not supported in your browser');
+                    return;
+                }
+
+                try {
+                    this.isRecording = true;
+                    this.render();
+                    
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.mediaRecorder = new MediaRecorder(stream);
+                    this.audioChunks = [];
+
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        this.audioChunks.push(event.data);
+                    };
+
+                    this.mediaRecorder.onstop = () => {
+                        // Simulate transcription
+                        this.transcript = 'I need to build a website for my photography business by next Friday. The goal is to showcase my portfolio and get more clients. I need to choose a template, add my photos, write about me page, and set up contact form. Please remind me daily.';
+                        this.render();
+                    };
+
+                    this.mediaRecorder.start();
+                } catch (error) {
+                    console.error('Error starting recording:', error);
+                    alert('Error accessing microphone');
+                    this.isRecording = false;
+                    this.render();
+                }
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                    this.isRecording = false;
+                    this.render();
+                }
+            }
+
+            async analyzeNote() {
+                if (!this.transcript.trim()) {
+                    alert('Please record or enter a voice note first');
+                    return;
+                }
+
+                this.isAnalyzing = true;
+                this.render();
+
+                try {
+                    const analysis = await mockAnalyzeVoiceNote(this.transcript);
+                    
+                    const project = {
+                        user_id: this.currentUser.id,
+                        name: analysis.project_name,
+                        due_date: analysis.due_date,
+                        goal: analysis.goal,
+                        needs_reminder: 1,
+                        reminder_frequency: analysis.reminder_frequency,
+                        tone: analysis.tone,
+                        suggestion: analysis.suggestion
+                    };
+
+                    const savedProject = this.db.addProject(project);
+                    this.db.addTasks(savedProject.id, analysis.tasks);
+                    
+                    this.loadProjects();
+                    this.transcript = '';
+                    this.setActiveTab('manage');
+                    this.selectedProject = savedProject;
+                    
+                } catch (error) {
+                    console.error('Error analyzing note:', error);
+                    alert('Error analyzing voice note');
+                } finally {
+                    this.isAnalyzing = false;
+                    this.render();
+                }
+            }
+
+            selectProject(project) {
+                this.selectedProject = project;
+                this.editingProject = null;
+                this.render();
+            }
+
+            editProject(project) {
+                this.editingProject = { ...project };
+                this.render();
+            }
+
+            saveProject() {
+                if (this.editingProject) {
+                    this.db.updateProject(this.editingProject.id, this.editingProject);
+                    this.loadProjects();
+                    this.selectedProject = this.editingProject;
+                    this.editingProject = null;
+                    this.render();
+                }
+            }
+
+            deleteProject(projectId) {
+                if (confirm('Are you sure you want to delete this project?')) {
+                    this.db.deleteProject(projectId);
+                    this.loadProjects();
+                    this.selectedProject = null;
+                    this.render();
+                }
+            }
+
+            toggleTask(taskId) {
+                const task = this.db.tasks.find(t => t.id === taskId);
+                if (task) {
+                    const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+                    this.db.updateTaskStatus(taskId, newStatus);
+                    this.render();
+                }
+            }
+
+            updateTranscript(value) {
+                this.transcript = value;
+            }
+
+            updateEditingProject(field, value) {
+                if (this.editingProject) {
+                    this.editingProject[field] = value;
+                }
+            }
+
+            render() {
+                const content = document.getElementById('app-content');
+                if (this.activeTab === 'create') {
+                    content.innerHTML = this.renderCreateTab();
+                } else {
+                    content.innerHTML = this.renderManageTab();
+                }
+            }
+
+            renderCreateTab() {
+                return `
+                    <div class="create-section">
+                        <h2 class="create-title">Tell me about your project</h2>
+                        <p class="create-subtitle">Record a voice note or type your project details</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="voice-section">
+                            <div style="text-align: center; margin-bottom: 24px;">
+                                <button 
+                                    class="record-button ${this.isRecording ? 'recording' : ''}"
+                                    onclick="${this.isRecording ? 'app.stopRecording()' : 'app.startRecording()'}"
+                                    ${this.isAnalyzing ? 'disabled' : ''}
+                                >
+                                    ${this.isRecording ? '⏹️' : '🎤'}
+                                </button>
+                                <div style="font-size: 14px; opacity: 0.7;">
+                                    ${this.isRecording ? 'Recording... Click to stop' : 'Click to start recording'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Or type your project note:</label>
+                            <textarea 
+                                class="form-textarea"
+                                placeholder="Example: I need to build a website for my photography business by next Friday. The goal is to showcase my portfolio and get more clients. I need to choose a template, add my photos, write about me page, and set up contact form. Please remind me daily."
+                                onchange="app.updateTranscript(this.value)"
+                            >${this.transcript}</textarea>
+                        </div>
+
+                        <div style="text-align: center;">
+                            <button 
+                                class="btn btn-primary"
+                                onclick="app.analyzeNote()"
+                                ${this.isAnalyzing || (!this.transcript.trim()) ? 'disabled' : ''}
+                            >
+                                ${this.isAnalyzing ? '🤖 Analyzing...' : '✨ Create Project'}
+                            </button>
+                        </div>
+
+                        ${this.transcript ? `
+                        <div style="margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                            <h3 style="margin-bottom: 8px; font-size: 16px; font-weight: 600;">📝 Your Note:</h3>
+                            <p style="color: rgba(255,255,255,0.8); font-style: italic;">"${this.transcript}"</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            renderManageTab() {
+                if (this.projects.length === 0) {
+                    return `
+                        <div class="empty-state">
+                            <div class="empty-icon">📋</div>
+                            <h2 class="empty-title">No projects yet</h2>
+                            <p class="empty-text">Create your first project using voice input</p>
+                            <button class="btn btn-primary" onclick="app.setActiveTab('create')">
+                                Create Project
+                            </button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="projects-grid">
+                        <div class="projects-list">
+                            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Your Projects</h3>
+                            ${this.projects.map(project => `
+                                <div 
+                                    class="project-item ${this.selectedProject?.id === project.id ? 'selected' : ''}"
+                                    onclick="app.selectProject(${JSON.stringify(project).replace(/"/g, '&quot;')})"
+                                >
+                                    <div class="project-name">${project.name}</div>
+                                    <div class="project-meta">
+                                        📅 Due: ${new Date(project.due_date).toLocaleDateString()}<br>
+                                        🔔 ${project.reminder_frequency} reminders
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="project-details">
+                            ${this.selectedProject ? this.renderProjectDetails() : `
+                                <div class="empty-state">
+                                    <div class="empty-icon">👈</div>
+                                    <h3 class="empty-title">Select a project</h3>
+                                    <p class="empty-text">Choose a project from the list to view details and manage settings</p>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderProjectDetails() {
+                if (this.editingProject) {
+                    return this.renderEditForm();
+                }
+
+                const tasks = this.db.getTasksForProject(this.selectedProject.id);
+                const completedTasks = tasks.filter(t => t.status === 'completed').length;
+                const progress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+
+                return `
+                    <div class="project-header">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 16px;">
+                            <h2 class="project-title">${this.selectedProject.name}</h2>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-primary" onclick="app.editProject(${JSON.stringify(this.selectedProject).replace(/"/g, '&quot;')})">
+                                    ⚙️ Settings
+                                </button>
+                                <button class="btn" style="background: #dc2626; color: white;" onclick="app.deleteProject('${this.selectedProject.id}')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="project-info">
+                            <div class="info-item">
+                                <div class="info-label">Goal</div>
+                                <div class="info-value">${this.selectedProject.goal}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Due
