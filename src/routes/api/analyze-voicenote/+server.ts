@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import OpenAI from 'openai';
-import type { RequestHandler } from './$types';
+import type { RequestHandler } from '@sveltejs/kit';
 import type { AIAnalysis } from '../../../app';
 
 export const POST: RequestHandler = async ({ request, platform, locals }) => {

@@ -1,0 +1,15 @@
+{
+	"/": [],
+	"/api/analyze-voicenote": [
+		"src/routes/api/analyze-voicenote/+server.ts"
+	],
+	"/api/projects": [
+		"src/routes/api/projects/+server.ts"
+	],
+	"/api/projects/[id]": [
+		"src/routes/api/projects/[id]/+server.ts"
+	],
+	"/api/tasks": [
+		"src/routes/api/tasks/+server.ts"
+	]
+}

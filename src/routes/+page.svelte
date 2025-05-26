@@ -220,19 +220,18 @@
                   </div>
                 </div>
               </div>
-              {#let tasks = selected.tasks}
-                <div class="progress-section">
-                  <div class="progress-header">
-                    <span>Progress</span>
-                    <span>{tasks.filter(t=>t.status==='completed').length}/{tasks.length} tasks completed</span>
-                  </div>
-                  <div class="progress-bar">
-                    <div class="progress-fill" style="width: {tasks.length?100*tasks.filter(t=>t.status==='completed').length/tasks.length:0}%;"></div>
-                  </div>
+              <div class="progress-section">
+                <div class="progress-header">
+                  <span>Progress</span>
+                  <span>{selected.tasks.filter(t=>t.status==='completed').length}/{selected.tasks.length} tasks completed</span>
                 </div>
-                <div class="tasks-section">
-                  <h4 style="font-weight:600; margin-bottom:12px;">Tasks</h4>
-                  {#each tasks as t}
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: {selected.tasks.length?100*selected.tasks.filter(t=>t.status==='completed').length/selected.tasks.length:0}%;"></div>
+                </div>
+              </div>
+              <div class="tasks-section">
+                <h4 style="font-weight:600; margin-bottom:12px;">Tasks</h4>
+                {#each selected.tasks as t}
                   <div class="task-item">
                     <div class="task-checkbox" class:completed={t.status==='completed'}
                          on:click={()=>toggleTask(selected.id,t.id)}>
@@ -241,12 +240,11 @@
                     <div class="task-text" class:completed={t.status==='completed'}>{t.description}</div>
                   </div>
                   {/each}
-                </div>
                 <div class="settings-panel">
                   <div class="settings-title">💡 Suggestion</div>
                   <div style="color:rgba(99,102,241,1); font-weight:500;">{selected.suggestion}</div>
                 </div>
-              {/let}
+              </div>
             {/if}
           {:else}
             <div class="empty-state">
