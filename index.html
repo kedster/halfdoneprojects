@@ -913,3 +913,109 @@
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Due
+                                          <div class="project-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 class="project-title">${this.selectedProject.name}</h2>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" onclick="app.editProject(${JSON.stringify(this.selectedProject).replace(/"/g, '&quot;')})">⚙️ Settings</button>
+            <button class="btn" style="background: #dc2626; color: white;" onclick="app.deleteProject('${this.selectedProject.id}')">🗑️ Delete</button>
+          </div>
+        </div>
+        <div class="project-info">
+          <div class="info-item">
+            <div class="info-label">Goal</div>
+            <div class="info-value">${this.selectedProject.goal}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Due Date</div>
+            <div class="info-value">${new Date(this.selectedProject.due_date).toLocaleDateString()}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Reminders</div>
+            <div class="info-value">${this.selectedProject.reminder_frequency.charAt(0).toUpperCase() + this.selectedProject.reminder_frequency.slice(1)}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Tone</div>
+            <div class="info-value">${this.selectedProject.tone}</div>
+          </div>
+        </div>
+      </div>
+      <div class="progress-section">
+        <div class="progress-header">
+          <span>Progress</span>
+          <span>${completedTasks}/${tasks.length} tasks completed</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${progress}%;"></div>
+        </div>
+      </div>
+      <div class="tasks-section">
+        <h4 style="font-weight:600; margin-bottom:12px;">Tasks</h4>
+        ${tasks.map(task => `
+          <div class="task-item">
+            <div class="task-checkbox ${task.status === 'completed' ? 'completed' : ''}"
+                 onclick="app.toggleTask('${task.id}')">
+              ${task.status === 'completed' ? '✔️' : ''}
+            </div>
+            <div class="task-text ${task.status === 'completed' ? 'completed' : ''}">
+              ${task.description}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="settings-panel">
+        <div class="settings-title">💡 Suggestion</div>
+        <div style="color:rgba(99,102,241,1); font-weight:500;">${this.selectedProject.suggestion}</div>
+      </div>
+    `;
+  }
+
+  renderEditForm() {
+    const p = this.editingProject;
+    return `
+    <form onsubmit="event.preventDefault(); app.saveProject();">
+      <h3 style="font-size:20px;font-weight:600; margin-bottom:16px;">Edit Project</h3>
+      <div class="form-group">
+        <label class="form-label">Project Name</label>
+        <input class="form-input" value="${p.name || ''}"
+          onchange="app.updateEditingProject('name', this.value)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Goal</label>
+        <input class="form-input" value="${p.goal || ''}"
+          onchange="app.updateEditingProject('goal', this.value)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Due Date</label>
+        <input class="form-input" type="date" value="${p.due_date || ''}"
+          onchange="app.updateEditingProject('due_date', this.value)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reminder Frequency</label>
+        <select class="form-input" onchange="app.updateEditingProject('reminder_frequency', this.value)">
+          <option value="daily" ${p.reminder_frequency === 'daily' ? 'selected' : ''}>Daily</option>
+          <option value="weekly" ${p.reminder_frequency === 'weekly' ? 'selected' : ''}>Weekly</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tone</label>
+        <select class="form-input" onchange="app.updateEditingProject('tone', this.value)">
+          <option value="encouraging" ${p.tone === 'encouraging' ? 'selected' : ''}>Encouraging</option>
+          <option value="gentle" ${p.tone === 'gentle' ? 'selected' : ''}>Gentle</option>
+          <option value="firm" ${p.tone === 'firm' ? 'selected' : ''}>Firm</option>
+          <option value="humorous" ${p.tone === 'humorous' ? 'selected' : ''}>Humorous</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-primary" type="submit">💾 Save</button>
+        <button class="btn" type="button" style="background:#374151; color:white;" onclick="app.editingProject=null; app.render()">Cancel</button>
+      </div>
+    </form>
+    `;
+  }
+}
+
+window.app = new HalfDoneProjectsApp();
+</script>
+</body>
+</html>
