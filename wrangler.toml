@@ -13,7 +13,7 @@ NODE_VERSION = "20"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "half_done_projects"
-database_id = "your-d1-database-id"
+database_id = "1f5da1ff-3b29-47fc-9ce1-19cdea0c7c62"
 
 [[env.preview.d1_databases]]
 binding = "DB"
