@@ -3,27 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Half-Done Projects</title>
-<link rel="stylesheet" href="style.css" /></head>
+    <title>Project Notes</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
 <body>
-    <div class="header">
+    <!-- Header -->
+    <header class="header">
         <div class="container">
-            <div class="header-content">
-                <h1 class="logo">Half-Done Projects</h1>
-                <div class="user-info">👋 Demo User</div>
-            </div>
-            <nav class="nav-tabs">
-                <button class="nav-tab active" onclick="app.setActiveTab('create')">Create Project</button>
-                <button class="nav-tab" onclick="app.setActiveTab('manage')">Manage Projects</button>
-            </nav>
+            <h1>Project Notes</h1>
         </div>
-    </div>
+    </header>
 
-    <main class="main-content">
+    <!-- Main Content -->
+    <main class="main">
         <div class="container">
-            <div id="app-content"></div>
+            <!-- Auth Form (shown when not logged in) -->
+            <div id="authSection" class="hidden">
+                <form id="authForm" class="auth-form">
+                    <h2>Welcome Back</h2>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required placeholder="Enter your username">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn" style="width:100%">Sign In</button>
+                </form>
+            </div>
+
+            <!-- Notes Section (shown when logged in) -->
+            <div id="notesSection" class="hidden">
+                <div class="notes-header">
+                    <h2>My Project Notes</h2>
+                    <div>
+                        <button id="addNoteBtn" class="btn">+ Add Note</button>
+                        <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                    </div>
+                </div>
+
+                <div id="notesList" class="notes-list">
+                    <!-- Notes will be dynamically inserted here -->
+                </div>
+            </div>
         </div>
     </main>
-<script src="script.js"></script>
+
+    <!-- Note Modal -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Note</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <form id="noteForm">
+                <div class="form-group">
+                    <label for="noteTitle">Title</label>
+                    <input type="text" id="noteTitle" name="title" required placeholder="Enter note title">
+                </div>
+                <div class="form-group">
+                    <label for="noteContent">Content</label>
+                    <textarea id="noteContent" name="content" placeholder="Enter your note content here..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
+
 </html>
