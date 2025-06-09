@@ -18,7 +18,7 @@
     <main class="main">
         <div class="container">
             <!-- Auth Form (shown when not logged in) -->
-            <div id="authSection" class="hidden">
+            <div id="authSection">
                 <form id="authForm" class="auth-form">
                     <h2>Welcome Back</h2>
                     <div class="form-group">
@@ -28,6 +28,7 @@
                     <div class="form-group">
                         <label for="password">Password</label>
                         <input type="password" id="password" name="password" required placeholder="Enter your password">
+                        <div id="loginError" class="error-message hidden"></div>
                     </div>
                     <button type="submit" class="btn" style="width:100%">Sign In</button>
                 </form>
@@ -36,7 +37,7 @@
             <!-- Notes Section (shown when logged in) -->
             <div id="notesSection" class="hidden">
                 <div class="notes-header">
-                    <h2>My Project Notes</h2>
+                    <h2 id="welcomeMessage">My Project Notes</h2>
                     <div>
                         <button id="addNoteBtn" class="btn">+ Add Note</button>
                         <button id="logoutBtn" class="btn btn-secondary">Logout</button>
@@ -74,5 +75,5 @@
         </div>
     </div>
 </body>
-
+<script src="script.js"></script>     
 </html>

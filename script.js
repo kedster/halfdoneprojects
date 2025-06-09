@@ -1,9 +1,9 @@
         // API Configuration - Replace with your Cloudflare Workers endpoints
-        const API_BASE = 'https://halfdoneprojects-worker.sethkeddy.workers.dev/'; // This would be your Cloudflare Workers domain
+        const API_BASE = 'https://halfdoneprojects-worker.sethkeddy.workers.dev'; 
         
         // App State
         let currentUser = null;
-        let currentNoteId = null;
+        let authToken = null;
         let notes = [];
 
         // DOM Elements
@@ -20,127 +20,121 @@
             cancelBtn: document.getElementById('cancelBtn'),
             modalTitle: document.getElementById('modalTitle'),
             noteTitle: document.getElementById('noteTitle'),
-            noteContent: document.getElementById('noteContent')
+            noteContent: document.getElementById('noteContent'),
+            loginError: document.getElementById('loginError'),
+            welcomeMessage: document.getElementById('welcomeMessage')
         };
 
         // Utility Functions
-        function generateSessionId() {
-            return 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-        }
-
-        function getSessionId() {
-            let sessionId = localStorage.getItem('sessionId');
-            if (!sessionId) {
-                sessionId = generateSessionId();
-                localStorage.setItem('sessionId', sessionId);
-            }
-            return sessionId;
-        }
-
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
             return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         }
 
-        // API Functions (simulated - replace with actual Cloudflare Workers API calls)
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(message) {
+            els.loginError.textContent = message;
+            els.loginError.classList.remove('hidden');
+        }
+
+        function hideError() {
+            els.loginError.classList.add('hidden');
+        }
+
+        // API Functions matching your Cloudflare Worker
         async function apiCall(endpoint, options = {}) {
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            const sessionId = getSessionId();
-            
-            // Simulate different endpoints
-            switch(endpoint) {
-                case '/auth/login':
-                    const { username, password } = options.body;
-                    // Simple auth simulation - in real app, this would validate against your backend
-                    if (username && password) {
-                        const userData = { id: username, username, sessionId };
-                        localStorage.setItem('currentUser', JSON.stringify(userData));
-                        return { success: true, user: userData };
-                    }
-                    throw new Error('Invalid credentials');
+            const url = API_BASE + endpoint;
+            const config = {
+                method: options.method || 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            };
 
-                case '/auth/validate':
-                    const storedUser = localStorage.getItem('currentUser');
-                    if (storedUser) {
-                        return { success: true, user: JSON.parse(storedUser) };
-                    }
-                    throw new Error('No valid session');
+            if (authToken) {
+                config.headers.Authorization = `Bearer ${authToken}`;
+            }
 
-                case '/notes':
-                    if (options.method === 'POST') {
-                        // Create note
-                        const newNote = {
-                            id: 'note_' + Date.now(),
-                            ...options.body,
-                            userId: currentUser.id,
-                            createdAt: new Date().toISOString(),
-                            updatedAt: new Date().toISOString()
-                        };
-                        const userNotes = JSON.parse(localStorage.getItem(`notes_${currentUser.id}`) || '[]');
-                        userNotes.push(newNote);
-                        localStorage.setItem(`notes_${currentUser.id}`, JSON.stringify(userNotes));
-                        return { success: true, note: newNote };
-                    } else {
-                        // Get notes
-                        const userNotes = JSON.parse(localStorage.getItem(`notes_${currentUser.id}`) || '[]');
-                        return { success: true, notes: userNotes };
-                    }
+            if (options.body) {
+                config.body = JSON.stringify(options.body);
+            }
 
-                case `/notes/${options.noteId}`:
-                    const userNotes = JSON.parse(localStorage.getItem(`notes_${currentUser.id}`) || '[]');
-                    if (options.method === 'PUT') {
-                        // Update note
-                        const noteIndex = userNotes.findIndex(n => n.id === options.noteId);
-                        if (noteIndex >= 0) {
-                            userNotes[noteIndex] = { ...userNotes[noteIndex], ...options.body, updatedAt: new Date().toISOString() };
-                            localStorage.setItem(`notes_${currentUser.id}`, JSON.stringify(userNotes));
-                            return { success: true, note: userNotes[noteIndex] };
-                        }
-                    } else if (options.method === 'DELETE') {
-                        // Delete note
-                        const filteredNotes = userNotes.filter(n => n.id !== options.noteId);
-                        localStorage.setItem(`notes_${currentUser.id}`, JSON.stringify(filteredNotes));
-                        return { success: true };
-                    }
-                    throw new Error('Note not found');
-
-                default:
-                    throw new Error('Endpoint not found');
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
             }
         }
 
         // Auth Functions
         async function login(username, password) {
             try {
+                hideError();
                 const response = await apiCall('/auth/login', {
                     method: 'POST',
                     body: { username, password }
                 });
-                currentUser = response.user;
+                
+                authToken = response.token;
+                currentUser = username;
+                
+                // Store token for persistence
+                localStorage.setItem('authToken', authToken);
+                localStorage.setItem('currentUser', username);
+                
                 showNotesSection();
                 await loadNotes();
             } catch (error) {
-                alert('Login failed: ' + error.message);
+                showError('Login failed: ' + error.message);
             }
         }
 
         async function validateSession() {
+            const storedToken = localStorage.getItem('authToken');
+            const storedUser = localStorage.getItem('currentUser');
+            
+            if (!storedToken || !storedUser) {
+                showAuthSection();
+                return;
+            }
+
             try {
-                const response = await apiCall('/auth/validate');
-                currentUser = response.user;
-                showNotesSection();
-                await loadNotes();
+                authToken = storedToken;
+                // Since we don't have a real API, just show auth section for now
+                // Uncomment the lines below when you have your Worker deployed
+                // const response = await apiCall('/auth/validate');
+                // currentUser = response.user;
+                // showNotesSection();
+                // await loadNotes();
+                showAuthSection(); // Show login for now
             } catch (error) {
+                // Invalid session, clear storage and show auth
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('currentUser');
                 showAuthSection();
             }
         }
 
         function logout() {
             currentUser = null;
-            localStorage.removeItem('currentUser');
+            authToken = null;
             notes = [];
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
             showAuthSection();
         }
 
@@ -153,35 +147,29 @@
         function showNotesSection() {
             els.authSection.classList.add('hidden');
             els.notesSection.classList.remove('hidden');
+            els.welcomeMessage.textContent = `${currentUser}'s Project Notes`;
         }
 
-        function showModal(title = 'Add Note', note = null) {
+        function showModal(title = 'Add Note') {
             els.modalTitle.textContent = title;
-            if (note) {
-                els.noteTitle.value = note.title;
-                els.noteContent.value = note.content;
-                currentNoteId = note.id;
-            } else {
-                els.noteTitle.value = '';
-                els.noteContent.value = '';
-                currentNoteId = null;
-            }
+            els.noteTitle.value = '';
+            els.noteContent.value = '';
             els.noteModal.classList.add('show');
         }
 
         function hideModal() {
             els.noteModal.classList.remove('show');
-            currentNoteId = null;
         }
 
         // Notes Functions
         async function loadNotes() {
             try {
                 const response = await apiCall('/notes');
-                notes = response.notes;
+                notes = response.notes || [];
                 renderNotes();
             } catch (error) {
                 console.error('Failed to load notes:', error);
+                alert('Failed to load notes: ' + error.message);
             }
         }
 
@@ -197,12 +185,10 @@
                         <h3>${escapeHtml(note.title)}</h3>
                         <p>${escapeHtml(note.content.substring(0, 100))}${note.content.length > 100 ? '...' : ''}</p>
                         <div class="note-meta">
-                            Created: ${formatDate(note.createdAt)}
-                            ${note.updatedAt !== note.createdAt ? ` • Updated: ${formatDate(note.updatedAt)}` : ''}
+                            Created: ${formatDate(note.created)}
                         </div>
                     </div>
                     <div class="note-actions">
-                        <button class="btn btn-sm" onclick="editNote('${note.id}')">Edit</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button>
                     </div>
                 </div>
@@ -211,20 +197,10 @@
 
         async function saveNote(title, content) {
             try {
-                if (currentNoteId) {
-                    // Update existing note
-                    await apiCall(`/notes/${currentNoteId}`, {
-                        method: 'PUT',
-                        noteId: currentNoteId,
-                        body: { title, content }
-                    });
-                } else {
-                    // Create new note
-                    await apiCall('/notes', {
-                        method: 'POST',
-                        body: { title, content }
-                    });
-                }
+                await apiCall('/notes', {
+                    method: 'POST',
+                    body: { title, content }
+                });
                 hideModal();
                 await loadNotes();
             } catch (error) {
@@ -232,32 +208,16 @@
             }
         }
 
-        async function editNote(noteId) {
-            const note = notes.find(n => n.id === noteId);
-            if (note) {
-                showModal('Edit Note', note);
-            }
-        }
-
         async function deleteNote(noteId) {
             if (confirm('Are you sure you want to delete this note?')) {
                 try {
-                    await apiCall(`/notes/${noteId}`, {
-                        method: 'DELETE',
-                        noteId
-                    });
-                    await loadNotes();
+                    // Note: Your current Worker doesn't have delete endpoint
+                    // You'll need to add this to your Worker
+                    alert('Delete functionality needs to be added to your Cloudflare Worker');
                 } catch (error) {
                     alert('Failed to delete note: ' + error.message);
                 }
             }
-        }
-
-        // Utility function to escape HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
 
         // Event Listeners
@@ -270,7 +230,15 @@
         els.noteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            await saveNote(formData.get('title'), formData.get('content'));
+            const title = formData.get('title');
+            const content = formData.get('content');
+            
+            if (!title.trim()) {
+                alert('Please enter a title');
+                return;
+            }
+            
+            await saveNote(title, content);
         });
 
         els.addNoteBtn.addEventListener('click', () => showModal());
@@ -285,11 +253,10 @@
             }
         });
 
+        // Make functions globally available for inline onclick handlers
+        window.deleteNote = deleteNote;
+
         // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
             validateSession();
         });
-
-        // Make functions globally available for inline onclick handlers
-        window.editNote = editNote;
-        window.deleteNote = deleteNote;
