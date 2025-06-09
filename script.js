@@ -1,5 +1,5 @@
         // API Configuration - Replace with your Cloudflare Workers endpoints
-        const API_BASE = '/api'; // This would be your Cloudflare Workers domain
+        const API_BASE = 'https://halfdoneprojects-worker.sethkeddy.workers.dev/'; // This would be your Cloudflare Workers domain
         
         // App State
         let currentUser = null;
